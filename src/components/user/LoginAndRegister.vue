@@ -1,14 +1,14 @@
 <template>
-  <div>
+  <div class="wrap" :style="{backgroundImage: 'url(' + bgImgSrc + ')'}">
     <!-- 登陆card -->
     <transition name="leftToRight">
       <Card class="form-card" v-show="!isShowRegister">
-        <p slot="title"><Icon type="wifi"></Icon> 登陆</p>
+        <p slot="title"><Icon type="paper-airplane"></Icon> 登陆</p>
         <a href="#" slot="extra" @click.prevent="isShowRegister = true">
             <Icon type="happy-outline"></Icon>
             注册
         </a>
-        <Form ref="loginObj" :model="loginObj" :rules="loginRule" :label-width="70">
+        <Form ref="loginObj" :model="loginObj" :rules="loginRule" :label-width="80">
           <FormItem label="账号/昵称" prop="username">
             <Input type="text" v-model="loginObj.username" />
           </FormItem>
@@ -32,7 +32,7 @@
             <Icon type="ios-undo-outline"></Icon>
             返回登陆
         </a>
-        <Form ref="registerObj" :model="registerObj" :rules="registerRule" :label-width="70">
+        <Form ref="registerObj" :model="registerObj" :rules="registerRule" :label-width="80">
           <FormItem label="昵称" prop="username">
             <Input type="text" v-model="registerObj.username" />
           </FormItem>
@@ -70,10 +70,22 @@
         //登陆信息验证对象
         loginRule: {
           username: [
-
+            { required: true, message: '请输入账号/昵称' }
           ],
           password: [
-
+            { required: true, message: '请输入密码' },
+            {
+              min: 6,
+              message: "密码不能少于6个字符",
+            },
+            {
+              max: 18,
+              message: "密码不能大于18个字符",
+            },
+            {
+              pattern: /^[A-Za-z0-9]+$/gi,
+              message: "密码只能由大小写字母及数字组成"
+            }
           ]
         },
 
@@ -86,24 +98,76 @@
         //注册信息验证对象
         registerRule: {
           username: [
-
+            { required: true, message: '请输入昵称'},
+            {
+              min: 2,
+              message: "昵称不能少于2个字符",
+            },
+            {
+              max: 10,
+              message: "昵称不能大于10个字符",
+            },
+            {
+              pattern: /^[A-Za-z0-9\u4e00-\u9fa5]+$/gi,
+              message: "昵称不能含有特殊字符或空格"
+            }
           ],
           password: [
-
+            { required: true, message: '请输入密码' },
+            {
+              min: 6,
+              message: "密码不能少于6个字符",
+            },
+            {
+              max: 18,
+              message: "密码不能大于18个字符",
+            },
+            {
+              pattern: /^[A-Za-z0-9]+$/gi,
+              message: "密码只能由大小写字母及数字组成"
+            }
           ],
           repassword: [
-
-          ]
+            { required: true, message: '请输入确认密码' },
+            {
+              min: 6,
+              message: "确认密码不能少于6个字符",
+            },
+            {
+              max: 18,
+              message: "确认密码不能大于18个字符",
+            },
+            {
+              pattern: /^[A-Za-z0-9]+$/gi,
+              message: "确认密码只能由大小写字母及数字组成"
+            },
+            { validator: this.repasswordValidator }
+          ],
         },
+
+        bgImgSrc: require('../../assets/img/bg/login-register-bg.png'), //背景图片
       };
     },
     methods: {
       //登陆
       login() {
-        this.isShowLoginSpin = true;
-        util.http.post('user/login', this.loginObj).then((res) => {
-          console.log(res);
-          this.isShowLoginSpin = false;
+        this.$refs["loginObj"].validate(valid => {
+          if(valid){
+            this.isShowLoginSpin = true;
+            util.http.post('user/login', this.loginObj).then((res) => {
+              this.isShowLoginSpin = false;
+              console.log(res.data);
+              if(res.data.result){
+                this.$Message.success(res.data.desc);
+                //将登陆用户数据存入缓存中
+                util.cache.set('user', res.data.obj.user);
+                //跳转到home页
+                this.go('/home');
+              }else{
+                this.$Message.warning(res.data.desc);
+              }
+            })
+          }
         })
       },
       //重置登陆对象
@@ -113,15 +177,50 @@
 
       //注册
       register() {
-        this.isShowRegisterSpin = true;
-        setTimeout(() => {
-          this.isShowRegisterSpin = false;
-        }, 2000)
+        this.$refs["registerObj"].validate(valid => {
+          if(valid){
+            let reqObj = util.object.copy(this.registerObj);
+            delete reqObj.repassword;
+            
+            this.isShowRegisterSpin = true;
+            //请求注册
+            util.http.post('user/register', reqObj).then((res) => {
+              this.isShowRegisterSpin = false;
+              console.log(res.data);
+              if(res.data.result){
+                this.$Message.success(res.data.desc);
+                //给登陆对象赋值
+                util.object.copyFieldValue(this.loginObj, this.registerObj);
+                //清空registerObj
+                this.resetRegisterObj();
+                //切换到登陆界面
+                this.isShowRegister = false;
+              }else{
+                this.$Message.warning(res.data.desc);
+              }
+            })
+            .catch((err) => {
+              this.isShowRegisterSpin = false;
+            })
+          }
+        })
       },
       //重置注册对象
       resetRegisterObj() {
         this.$refs['registerObj'].resetFields();
       },
+
+      // -----------自定义Validator相关----------- //
+      //确认密码
+      repasswordValidator(rule, value, callback){
+        let password = this.registerObj.password;
+        if(password){
+          if(value != password){
+            callback(new Error("两次输入的密码不一致"));
+          }
+        }
+        return callback();
+      }
     },
     mounted() {
 
@@ -132,6 +231,12 @@
 
 <style lang="scss" scoped>
   $formCardWidth : 350px;
+  .wrap {
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-position: center;
+  }
   .form-card {
     width: $formCardWidth;
     position: fixed;

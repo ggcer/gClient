@@ -1,13 +1,13 @@
 /* ------------------------------------------缓存工具类------------------------------------------ */
 const cache = {
-	set: (key, value) => {
+	set(key, value) {
 		if (typeof value == 'string') {
 			localStorage.setItem(key, value);
 		} else {
 			localStorage.setItem(key, JSON.stringify(value));
 		}
 	},
-	get: key => {
+	get(key) {
 		let value = localStorage.getItem(key);
 		if (value && (value.substr(0, 1) == '{' || value.substr(0, 1) == '[')) {
 			try {
@@ -18,10 +18,10 @@ const cache = {
 		}
 		return value;
 	},
-	removeItem: key => {
+	removeItem(key) {
 		localStorage.removeItem(key);
 	},
-	clear: () => {
+	clear() {
 		localStorage.clear();
 	},
 }

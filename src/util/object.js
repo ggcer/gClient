@@ -14,6 +14,13 @@ const object = {
 			}
 		}
   },
+  //判断一个对象是否为空对象
+	isEmptyObj(obj) {
+		for(let name in obj) {
+			return false;
+		}
+		return true;
+	},
 }
 
 export default object

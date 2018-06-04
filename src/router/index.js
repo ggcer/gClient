@@ -3,17 +3,12 @@ import Router from 'vue-router'
 import store from '../vuex/store'
 
 import user from './user'
+import home from './home'
+import game from './game'
 
 Vue.use(Router)
 const router = new Router({
   routes: [
-    {
-      path: '/home',
-      name: 'home',
-      component: (resovle) => { 
-		  	require.ensure([], () => resovle(require('@/components/Home.vue')), 'home')
-		  }
-    },
     {
       path: '/test',
       name: 'test',
@@ -26,6 +21,8 @@ const router = new Router({
     },
     //分模块配置[等于一个XXX模块的路由分开配置在XXX.js文件中]
     ...user,
+    ...home,
+    ...game
   ]
 })
 
@@ -35,6 +32,8 @@ sessionStorage.setItem('storePath', '');
 router.beforeEach((to, from, next) => {
   //需要登陆的页面进行登陆校验，未登陆进行提示并跳转到首页
   if (to.meta.login != false && !util.cache.get("user")) {
+    //清除用户缓存
+    util.cache.removeItem('user');
     next('/user/loginAndRegister')
     return
   }
@@ -53,11 +52,11 @@ router.beforeEach((to, from, next) => {
 		storePath = storePath + '/' + toPathName;
 	}
 	sessionStorage.setItem('storePath', storePath);
-	console.log('path after: ' + storePath);
-	//setTimeout排在store.commit之后(防止路由转场动画名不一致)
-	setTimeout(() => {
-		next()
-	}, 100)
+  console.log('path after: ' + storePath);
+	next()
 })
+//页面切换后
+router.afterEach(route => {
+});
 
 export default router

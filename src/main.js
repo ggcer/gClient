@@ -5,12 +5,25 @@ import store from './vuex/store'
 //iView UI
 import iView from 'iview';
 import 'iview/dist/styles/iview.css';
+//croppa
+import Croppa from 'vue-croppa';
+import 'vue-croppa/dist/vue-croppa.css';
+//全局配置
+import globalConfig from './assets/lib/globalConfig'
 //全局工具类
 import util from './util'
+//全局码表
+import code from './assets/lib/code'
 
 Vue.use(iView);
-//将工具类挂在到window下
+Vue.use(Croppa);
+
+//将全局配置挂载到window下
+window.globalConfig = globalConfig;
+//将工具类挂载到window下
 window.util = util;
+//将code挂载到window下
+window.code = code;
 
 //Vue全局扩展
 Vue.mixin({
@@ -37,7 +50,7 @@ Vue.mixin({
       },
       //获取路由跳转的参数对象
       getRouterDataObj: () => {
-        return util.common.isEmptyObj(this.$route.query) ? this.$route.params : this.$route.query;
+        return util.object.isEmptyObj(this.$route.query) ? this.$route.params : this.$route.query;
       },
       //回到上一个页面
       back: () => {

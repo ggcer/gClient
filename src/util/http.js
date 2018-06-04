@@ -13,6 +13,8 @@ let instance = axios.create({
 instance.interceptors.request.use(config => {
   // 判断当前用户是否登陆，未登陆进行提示并强制其重新登陆(除不需要登陆的页面外)
   if(routers.history.current.meta.login != false && !util.cache.get('user')){
+    //清除用户缓存
+    util.cache.removeItem('user');
     //跳转回登陆界面
     routers.push({name: 'loginAndRegister'});
     //取消请求

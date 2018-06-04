@@ -3,7 +3,7 @@
     <!-- 登陆card -->
     <transition name="leftToRight">
       <Card class="form-card" v-show="!isShowRegister">
-        <p slot="title"><Icon type="paper-airplane"></Icon> 登陆</p>
+        <p slot="title"><Icon type="ios-paperplane"></Icon> 登陆</p>
         <a href="#" slot="extra" @click.prevent="isShowRegister = true">
             <Icon type="happy-outline"></Icon>
             注册
@@ -161,6 +161,8 @@
                 this.$Message.success(res.data.desc);
                 //将登陆用户数据存入缓存中
                 util.cache.set('user', res.data.obj.user);
+                //新建用户设置缓存
+                util.cache.set('userSet', {});
                 //跳转到home页
                 this.go('/home');
               }else{
@@ -199,15 +201,22 @@
                 this.$Message.warning(res.data.desc);
               }
             })
-            .catch((err) => {
-              this.isShowRegisterSpin = false;
-            })
           }
         })
       },
       //重置注册对象
       resetRegisterObj() {
         this.$refs['registerObj'].resetFields();
+      },
+
+      //enter键监听
+      enterKeyHandler(){
+        //如果当前在注册界面则进行注册，如果在登陆页面则进行登陆
+        if(this.isShowRegister){
+          this.register();
+        }else{
+          this.login();
+        }
       },
 
       // -----------自定义Validator相关----------- //
@@ -223,27 +232,30 @@
       }
     },
     mounted() {
-
+      document.onkeydown = (e) => {
+        if (e && e.keyCode == 13) { //回车键的键值为13
+          this.enterKeyHandler();
+        }
+      };
+    },
+    destroyed() {
+      document.onkeydown = null;
     }
   };
 
 </script>
 
 <style lang="scss" scoped>
-  $formCardWidth : 350px;
-  .wrap {
-    width: 100%;
-    height: 100%;
-    background-size: 100% 100%;
-    background-position: center;
-  }
-  .form-card {
-    width: $formCardWidth;
-    position: fixed;
-    top: 100px;
-    left: calc(50% - #{$formCardWidth / 2});
-  }
-  .btn-wrap button{
-    margin-right: 10px;
-  }
+@import '@/assets/css/vars.scss';
+$formCardWidth : 350px;
+.form-card {
+  width: $formCardWidth;
+  position: fixed;
+  top: 100px;
+  left: calc(50% - #{$formCardWidth / 2});
+  opacity: $base-opacity;
+}
+.btn-wrap button{
+  margin-right: 10px;
+}
 </style>

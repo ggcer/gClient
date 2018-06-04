@@ -1,9 +1,33 @@
 /* ------------------------------------------重写UI框架样式scss------------------------------------------ */
+@import 'vars.scss';
 // card的右上角额外按钮
 .ivu-card-extra{
   font-size: 13px!important;
 }
 //加载模态层
 .ivu-spin-fix{
-  background-color: rgba(255, 255, 255, .6)
+  background-color: rgba(255, 255, 255, .6)!important;
+}
+//layout头部
+.ivu-layout-header{
+  padding: 0 20px!important;
+}
+//模态层
+.ivu-modal-content{
+  border-radius: 0!important;
+  opacity: $base-opacity!important;
+}
+.ivu-modal-header{
+  border-bottom: none!important;
+}
+.ivu-modal-footer{
+  border-top: none!important;
+}
+//card
+.ivu-card{
+  border-radius: 0!important;
+}
+//loading-bar
+.ivu-loading-bar{
+  position: absolute!important;
 }
